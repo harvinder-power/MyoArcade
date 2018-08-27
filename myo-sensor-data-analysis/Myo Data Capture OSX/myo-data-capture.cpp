@@ -33,7 +33,11 @@ public:
 			emgFile.close();
 		}
 		std::ostringstream emgFileString;
+<<<<<<< HEAD
 		emgFileString << "emg-analysis-realtime" << ".csv";
+=======
+		emgFileString << "emg-" << timestamp << ".csv";
+>>>>>>> 1af49bff5a9fad2f869974e37e7daa473dbf1954
 		emgFile.open(emgFileString.str(), std::ios::out);
 		emgFile << "timestamp,emg1,emg2,emg3,emg4,emg5,emg6,emg7,emg8" << std::endl;
 
