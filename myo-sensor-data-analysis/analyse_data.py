@@ -6,7 +6,7 @@ import scipy.signal as signal
 input_file = './New-Datasets(August-2018)/8-august-george-post-contraction-relaxation/emg-1533748606.csv'
 
 df = pd.read_csv(input_file)
-print df.head()
+#print df.head()
 
 #TO-DO: Normalise the time to a standardised system.
 N  = 2    # Filter order
