@@ -4,6 +4,8 @@ from threading import Lock, Thread
 
 import myo
 import numpy as np
+import csv
+from math import pi
 
 
 class EmgCollector(myo.DeviceListener):
@@ -36,7 +38,14 @@ class Plot(object):
     self.n = listener.n
     self.listener = listener
     self.fig = plt.figure()
-    self.axes = [self.fig.add_subplot('81' + str(i)) for i in range(1, 9)]
+
+
+
+
+
+
+
+    self.axes = [self.fig.add_subplot(111, polar=True)]
     [(ax.set_ylim([-100, 100])) for ax in self.axes]
     self.graphs = [ax.plot(np.arange(self.n), np.zeros(self.n))[0] for ax in self.axes]
     plt.ion()
@@ -44,7 +53,12 @@ class Plot(object):
   def update_plot(self):
     emg_data = self.listener.get_emg_data()
     emg_data = np.array([x[1] for x in emg_data]).T
-    print emg_data[1]
+    print emg_data
+    np.savetxt("foo.csv", emg_data, delimiter=",")
+    '''with open('emg_output.csv', 'wb') as myfile:
+        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+        wr.writerow(emg_data)
+        wr.writerow(" ")'''
     for g, data in zip(self.graphs, emg_data):
       if len(data) < self.n:
         # Fill the left side with zeroes.
@@ -64,6 +78,12 @@ def main():
   listener = EmgCollector(512)
   with hub.run_in_background(listener.on_event):
     Plot(listener).main()
+    '''print emg_data_queue + "\n"
+    print emg_data
+    with open("output.csv",'wb') as resultFile:
+        wr = csv.writer(resultFile, dialect='excel')
+        wr.writerow(emg_data)'''
+
 
 
 if __name__ == '__main__':

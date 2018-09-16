@@ -4,6 +4,7 @@ from threading import Lock, Thread
 
 import myo
 import numpy as np
+import csv
 
 
 class EmgCollector(myo.DeviceListener):
@@ -44,7 +45,12 @@ class Plot(object):
   def update_plot(self):
     emg_data = self.listener.get_emg_data()
     emg_data = np.array([x[1] for x in emg_data]).T
-    print emg_data[1]
+    print emg_data
+    np.savetxt("foo.csv", emg_data, delimiter=",")
+    '''with open('emg_output.csv', 'wb') as myfile:
+        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+        wr.writerow(emg_data)
+        wr.writerow(" ")'''
     for g, data in zip(self.graphs, emg_data):
       if len(data) < self.n:
         # Fill the left side with zeroes.
@@ -64,6 +70,12 @@ def main():
   listener = EmgCollector(512)
   with hub.run_in_background(listener.on_event):
     Plot(listener).main()
+    '''print emg_data_queue + "\n"
+    print emg_data
+    with open("output.csv",'wb') as resultFile:
+        wr = csv.writer(resultFile, dialect='excel')
+        wr.writerow(emg_data)'''
+
 
 
 if __name__ == '__main__':
