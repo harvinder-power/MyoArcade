@@ -6,6 +6,8 @@ import myo
 import numpy as np
 import csv
 from math import pi
+import pandas as pd
+
 
 
 class EmgCollector(myo.DeviceListener):
@@ -39,12 +41,7 @@ class Plot(object):
     self.listener = listener
     self.fig = plt.figure()
 
-
-
-
-
-
-
+    #Create the axes in a polar format, and initialise with 0's
     self.axes = [self.fig.add_subplot(111, polar=True)]
     [(ax.set_ylim([-100, 100])) for ax in self.axes]
     self.graphs = [ax.plot(np.arange(self.n), np.zeros(self.n))[0] for ax in self.axes]
@@ -55,15 +52,34 @@ class Plot(object):
     emg_data = np.array([x[1] for x in emg_data]).T
     print emg_data
     np.savetxt("foo.csv", emg_data, delimiter=",")
-    '''with open('emg_output.csv', 'wb') as myfile:
-        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-        wr.writerow(emg_data)
-        wr.writerow(" ")'''
-    for g, data in zip(self.graphs, emg_data):
+
+    #Crate a Pandas Dataframe of the different EMG leads
+    df = pd.DataFrame({
+    'emg1': emg_data[0],
+    'emg2': emg_data[1],
+    'emg3': emg_data[2],
+    'emg4': emg_data[3],
+    'emg5': emg_data[4],
+    'emg6': emg_data[5],
+    'emg7': emg_data[6],
+    'emg8': emg_data[7]
+    })
+
+    #Determine number of "categories"
+    categories=list(df)[1:]
+    N = len(categories)
+
+    #Find angle range
+    angles = [n / float(N) * 2 * pi for n in range(N)]
+    angles += angles[:1]
+
+
+
+    for g, data in zip(self.graphs, df):
       if len(data) < self.n:
         # Fill the left side with zeroes.
         data = np.concatenate([np.zeros(self.n - len(data)), data])
-      g.set_ydata(data)
+      g.set_ydata(df)
     plt.draw()
 
   def main(self):
@@ -78,13 +94,50 @@ def main():
   listener = EmgCollector(512)
   with hub.run_in_background(listener.on_event):
     Plot(listener).main()
-    '''print emg_data_queue + "\n"
-    print emg_data
-    with open("output.csv",'wb') as resultFile:
-        wr = csv.writer(resultFile, dialect='excel')
-        wr.writerow(emg_data)'''
 
 
 
 if __name__ == '__main__':
   main()
+
+'''
+
+    self.df = pd.DataFrame({
+    'emg1': emg_data[0],
+    'emg2': emg_data[1],
+    'emg3': emg_data[2],
+    'emg4': emg_data[3],
+    'emg5': emg_data[4],
+    'emg6': emg_data[5],
+    'emg7': emg_data[6],
+    'emg8': emg_data[7]
+    })
+
+# number of variable
+categories=list(df)[1:]
+N = len(categories)
+
+values=df.loc[0].drop('group').values.flatten().tolist()
+values += values[:1]
+values
+
+# What will be the angle of each axis in the plot? (we divide the plot / number of variable)
+angles = [n / float(N) * 2 * pi for n in range(N)]
+angles += angles[:1]
+
+fig = plt.figure(figsize=(20, 10))
+# Initialise the spider plot
+ax = plt.subplot(111, polar=True)
+
+# Draw one axe per variable + add labels labels yet
+plt.xticks(angles[:-1], categories, color='grey', size=8)
+
+# Draw ylabels
+ax.set_rlabel_position(0)
+plt.yticks([10,20,30], ["10","20","30"], color="grey", size=7)
+plt.ylim(0,10)
+
+# Plot data
+ax.plot(angles, values, linewidth=1, linestyle='solid')
+
+'''
